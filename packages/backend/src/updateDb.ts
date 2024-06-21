@@ -38,63 +38,66 @@ const download = async (url: string, path: string) => {
   log.info(`Downloaded ${url} to ${path}`);
 };
 
-const dataDir = `${import.meta.dir}/../data`;
+const dataDir =
+  process.env.NODE_ENV === "production"
+    ? `/data/backend`
+    : `${import.meta.dirname}/../../data/backend`;
 
 const downloadLicenses = async () => {
   log.info("Downloading licenses...");
-  if (!(await fs.stat(`${dataDir}/backend/licenses-zipped/`).catch(() => null))) {
+  if (!(await fs.stat(`${dataDir}/licenses-zipped/`).catch(() => null))) {
     log.info("Creating licenses directory...");
-    await fs.mkdir(`${dataDir}/backend/licenses-zipped`, {
+    await fs.mkdir(`${dataDir}/licenses-zipped`, {
       recursive: true,
     });
   } else {
     log.info("Licenses directory already exists.");
   }
-  if (!(await fs.stat(`${dataDir}/backend/licenses-csv`).catch(() => null))) {
+  if (!(await fs.stat(`${dataDir}/licenses-csv`).catch(() => null))) {
     log.info("Creating licenses directory...");
-    await fs.mkdir(`${dataDir}/backend/licenses-csv`, {
+    await fs.mkdir(`${dataDir}/licenses-csv`, {
       recursive: true,
     });
   }
 
-  if (!(await fs.stat(`${dataDir}/backend/licenses-zipped/.done`).catch(() => null))) {
+  if (!(await fs.stat(`${dataDir}/licenses-zipped/.done`).catch(() => null))) {
     log.info("Downloading licenses...");
 
     await download(
       "https://static.commons.nicovideo.jp/files/commons1.zip",
-      `${dataDir}/backend/licenses-zipped/commons1.zip`,
+      `${dataDir}/licenses-zipped/commons1.zip`,
     );
     await download(
       "https://static.commons.nicovideo.jp/files/commons2.zip",
-      `${dataDir}/backend/licenses-zipped/commons2.zip`,
+      `${dataDir}/licenses-zipped/commons2.zip`,
     );
     await download(
       "https://static.commons.nicovideo.jp/files/commons3.zip",
-      `${dataDir}/backend/licenses-zipped/commons3.zip`,
+      `${dataDir}/licenses-zipped/commons3.zip`,
     );
 
-    await fs.writeFile(`${dataDir}/backend/licenses-zipped/.done`, "", "utf8");
+    await fs.writeFile(`${dataDir}/licenses-zipped/.done`, "", "utf8");
   }
 
-  if (!(await fs.stat(`${dataDir}/backend/licenses-csv/.done`).catch(() => null))) {
+  if (!(await fs.stat(`${dataDir}/licenses-csv/.done`).catch(() => null))) {
     log.info("Unzipping licenses...");
 
     log.info("Unzipping commons1.zip...");
     await pipeline(
-      createReadStream(`${dataDir}/backend/licenses-zipped/commons1.zip`),
-      unzipper.Extract({ path: `${dataDir}/backend/licenses-csv/` }),
+      createReadStream(`${dataDir}/licenses-zipped/commons1.zip`),
+      unzipper.Extract({ path: `${dataDir}/licenses-csv/` }),
     );
     log.info("Unzipping commons2.zip...");
     await pipeline(
-      createReadStream(`${dataDir}/backend/licenses-zipped/commons2.zip`),
-      unzipper.Extract({ path: `${dataDir}/backend/licenses-csv/` }),
+      createReadStream(`${dataDir}/licenses-zipped/commons2.zip`),
+      unzipper.Extract({ path: `${dataDir}/licenses-csv/` }),
     );
     log.info("Unzipping commons3.zip...");
     await pipeline(
-      createReadStream(`${dataDir}/backend/licenses-zipped/commons3.zip`),
-      unzipper.Extract({ path: `${dataDir}/backend/licenses-csv/` }),
+      createReadStream(`${dataDir}/licenses-zipped/commons3.zip`),
+      unzipper.Extract({ path: `${dataDir}/licenses-csv/` }),
     );
-    await fs.writeFile(`${dataDir}/backend/licenses-csv/.done`, "", "utf8");
+    await fs.writeFile(`${dataDir}/licenses-csv/.done`, "", "utf8");
   }
 };
 
@@ -161,15 +164,15 @@ const parseLicenses = async () => {
     }
   };
   const commons1 = await parseCsv<Commons1Keys>(
-    `${dataDir}/backend/licenses-csv/commons1.csv`,
+    `${dataDir}/licenses-csv/commons1.csv`,
   );
   updateLicensesIndex(commons1, "externalDistribution");
   const commons2 = await parseCsv<Commons2Keys>(
-    `${dataDir}/backend/licenses-csv/commons2.csv`,
+    `${dataDir}/licenses-csv/commons2.csv`,
   );
   updateLicensesIndex(commons2, "nonCommons");
   const commons3 = await parseCsv<Commons3Keys>(
-    `${dataDir}/backend/licenses-csv/commons3.csv`,
+    `${dataDir}/licenses-csv/commons3.csv`,
   );
   updateLicensesIndex(commons3, "licenseOnly");
   log.info(`Found ${licensesIndex.size} licenses.`);
@@ -179,9 +182,10 @@ const parseLicenses = async () => {
   const licenseOnly = toMap(commons3.map(convertCommons3));
 
   for (const id of licensesIndex.keys()) {
-    const childrenCount = [externalDistribution, nonCommons, licenseOnly]
-      .map((map) => map.get(id)?.childrenCount ?? 0)
-      .find((count) => count > 0) ?? 0;
+    const childrenCount =
+      [externalDistribution, nonCommons, licenseOnly]
+        .map((map) => map.get(id)?.childrenCount ?? 0)
+        .find((count) => count > 0) ?? 0;
     licensesIndex.set(id, {
       ...licensesIndex.get(id)!,
       childrenCount,
