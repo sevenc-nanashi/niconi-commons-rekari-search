@@ -2,10 +2,12 @@
   "name": "@workspace/backend",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsx ./build.ts"
   },
   "devDependencies": {
     "@types/unzipper": "^0.10.9",
+    "esbuild": "^0.21.5",
     "tsx": "^4.15.7",
     "typescript": "^5.5.2"
   },

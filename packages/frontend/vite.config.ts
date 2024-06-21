@@ -19,6 +19,9 @@ export default defineConfig({
     }),
   ],
 
+  build: {
+    outDir: `../../dist/frontend`,
+  },
   server: {
     port: parseInt(process.env.FRONT_PORT!),
     proxy: {

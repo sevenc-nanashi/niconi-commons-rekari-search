@@ -6,6 +6,7 @@
       "persistent": true,
       "cache": false,
       "env": ["DB_*", "FRONT_PORT", "API_PORT"]
-    }
+    },
+    "build": {}
   }
 }

@@ -22,7 +22,7 @@ app.onError((error, c) => {
 
 await updateDb();
 
-app.use(serveStatic({ root: "dist" }));
+app.use(serveStatic({ root: `${import.meta.dirname}/frontend` }));
 
 serve(
   {
