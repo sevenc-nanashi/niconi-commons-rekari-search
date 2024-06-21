@@ -9,7 +9,11 @@ import { app } from "./app.js";
 import { db } from "./db.js";
 import "./routes/search.js";
 
+process.chdir(__dirname);
+
 app.use(logger(consola.withTag("api").info));
+
+app.use(serveStatic({ root: `./frontend` }));
 
 app.onError((error, c) => {
   if (error instanceof HTTPException) {
@@ -19,8 +23,6 @@ app.onError((error, c) => {
 
   return c.json({ error: error.message }, 500);
 });
-
-app.use(serveStatic({ root: `${__dirname}/frontend` }));
 
 (async () => {
   await db.connect();
