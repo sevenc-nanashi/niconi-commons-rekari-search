@@ -1,0 +1,24 @@
+{
+  "name": "@workspace/frontend",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.5",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "sass": "^1.77.6",
+    "tailwindcss": "^3.4.4",
+    "unplugin-fonts": "^1.1.1",
+    "vite": "^5.3.1",
+    "vue-tsc": "^2.0.21"
+  },
+  "dependencies": {
+    "@luca/cases": "npm:@jsr/luca__cases@^1.0.0",
+    "consola": "^3.2.3",
+    "vue": "^3.4.29"
+  }
+}

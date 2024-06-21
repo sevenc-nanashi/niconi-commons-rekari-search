@@ -1,0 +1,11 @@
+{
+  "name": "@workspace/common",
+  "scripts": {
+    "dev": "tsc -w"
+  },
+  "type": "module",
+  "types": "./dist",
+  "devDependencies": {
+    "typescript": "^5.5.2"
+  }
+}
