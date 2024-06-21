@@ -1,11 +1,18 @@
-To install dependencies:
-```sh
-bun install
+# niconi-commons-rekari-search / ニコニ・コモンズ（Re：仮）サーチ
+
+[ニコニ・コモンズ（Re：仮）](https://static.commons.nicovideo.jp/)の素材を検索するサイトです。
+データはサーバーにキャッシュしているため、ニコニコ側のサーバーに負荷をかけることはありません。
+
+## コマンド
+
+```bash
+pnpm install
+
+pnpm run dev
+
+pnpm run build
 ```
 
-To run:
-```sh
-bun run dev
-```
+## ライセンス
 
-open http://localhost:3000
+MIT Licenseで公開しています。詳しくは[LICENSE](LICENSE)をご覧ください。
