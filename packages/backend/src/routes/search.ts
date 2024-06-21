@@ -39,7 +39,7 @@ app.get(
     }
     if (query.title) {
       conditions.push(`title LIKE $${values.length + 1}`);
-      values.push(query.title + "%");
+      values.push("%" + query.title + "%");
     }
 
     const boolFilter = [];
