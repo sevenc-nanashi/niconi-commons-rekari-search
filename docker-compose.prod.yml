@@ -13,4 +13,4 @@ services:
     ports:
       - "${PORT}:8080"
     volumes:
-      - ./data/backend:/app/data/backend
+      - ./data/backend:/data/backend
