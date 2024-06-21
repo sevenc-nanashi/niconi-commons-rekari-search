@@ -8,4 +8,4 @@ EXPOSE 8080
 
 COPY dist/ /app/dist/
 
-CMD ["node", "dist/index.mjs"]
+CMD ["node", "dist/index.cjs"]
