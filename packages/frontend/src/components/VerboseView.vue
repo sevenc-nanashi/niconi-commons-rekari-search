@@ -35,13 +35,14 @@ const fields = computed(() => {
     );
   };
   const fields = {
-    種別: props.licenseInfo.externalDistribution
-      ? "外部配布"
-      : props.licenseInfo.nonCommons
-        ? "コモンズ外"
-        : props.licenseInfo.licenseOnly
-          ? "ライセンスのみ"
-          : "（不明）",
+    種別:
+      [
+        props.licenseInfo.externalDistribution && "外部配布",
+        props.licenseInfo.nonCommons && "コモンズ外",
+        props.licenseInfo.licenseOnly && "ライセンスのみ",
+      ]
+        .filter(Boolean)
+        .join("、") || "（不明）",
 
     ID: props.licenseInfo.id,
     タイトル: props.licenseInfo.title,
