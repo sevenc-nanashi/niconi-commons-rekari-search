@@ -18,6 +18,9 @@ const log = consola.withTag("updateDb.ts");
 const download = async (url: string, path: string) => {
   log.info(`Downloading ${url} to ${path}...`);
   const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to download ${url}: ${res.status}`);
+  }
   const body = res.body;
   if (!body) {
     throw new Error(`Failed to download ${url}`);
