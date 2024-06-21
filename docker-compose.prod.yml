@@ -14,6 +14,8 @@ services:
       - "${PORT}:8080"
     volumes:
       - ./data/backend:/data/backend
+    depends_on:
+      - db
     environment:
       DB_HOST: db
       DB_PORT: 5432
