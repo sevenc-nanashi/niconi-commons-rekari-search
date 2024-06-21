@@ -3,7 +3,7 @@ import * as env from "./env.js";
 import * as cases from "@luca/cases";
 
 export const db = new pg.Client({
-  host: `localhost`,
+  host: env.dbHost,
   port: env.dbPort,
   user: env.dbUser,
   database: env.dbName,

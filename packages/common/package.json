@@ -1,7 +1,8 @@
 {
   "name": "@workspace/common",
   "scripts": {
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "build": "tsc"
   },
   "type": "module",
   "types": "./dist",
