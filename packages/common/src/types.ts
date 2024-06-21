@@ -4,6 +4,7 @@ export type LicenseIndex = {
   externalDistribution: boolean;
   nonCommons: boolean;
   licenseOnly: boolean;
+  childrenCount: number;
 };
 
 export type ExternalDistribution = {
@@ -35,3 +36,18 @@ export type NonCommons = {
 };
 
 export type LicenseOnly = ExternalDistribution;
+
+export type SearchResponse = {
+  count: number;
+  results: LicenseInfo[];
+};
+
+export type LicenseInfo = {
+  id: string;
+  title: string;
+  childrenCount: number;
+
+  externalDistribution: ExternalDistribution | null;
+  nonCommons: NonCommons | null;
+  licenseOnly: LicenseOnly | null;
+};

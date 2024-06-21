@@ -1,5 +1,5 @@
 import { db, toPgRow } from "./db.js";
-import { createConsola } from "consola";
+import { consola } from "consola";
 import { createWriteStream, createReadStream } from "node:fs";
 import { finished, pipeline } from "node:stream/promises";
 import * as unzipper from "unzipper";
@@ -13,7 +13,7 @@ import {
   NonCommons,
 } from "@workspace/common/dist/types.js";
 
-const log = createConsola().withTag("updateDb.ts");
+const log = consola.withTag("updateDb.ts");
 
 const download = async (url: string, path: string) => {
   log.info(`Downloading ${url} to ${path}...`);
@@ -98,7 +98,7 @@ const downloadLicenses = async () => {
   }
 };
 
-const dbVersion = 1;
+const dbVersion = 3;
 const isDbUpdated = async () => {
   try {
     const res = await db.query<{ value: string }>(
@@ -153,6 +153,7 @@ const parseLicenses = async () => {
           externalDistribution: false,
           nonCommons: false,
           licenseOnly: false,
+          childrenCount: 0,
         } as LicenseIndex);
 
       license[source] = true;
@@ -173,11 +174,25 @@ const parseLicenses = async () => {
   updateLicensesIndex(commons3, "licenseOnly");
   log.info(`Found ${licensesIndex.size} licenses.`);
 
+  const externalDistribution = toMap(commons1.map(convertCommons1));
+  const nonCommons = toMap(commons2.map(convertCommons2));
+  const licenseOnly = toMap(commons3.map(convertCommons3));
+
+  for (const id of licensesIndex.keys()) {
+    const childrenCount = [externalDistribution, nonCommons, licenseOnly]
+      .map((map) => map.get(id)?.childrenCount ?? 0)
+      .find((count) => count > 0) ?? 0;
+    licensesIndex.set(id, {
+      ...licensesIndex.get(id)!,
+      childrenCount,
+    });
+  }
+
   return {
     licensesIndex,
-    externalDistribution: toUnique(commons1.map(convertCommons1)),
-    nonCommons: toUnique(commons2.map(convertCommons2)),
-    licenseOnly: toUnique(commons3.map(convertCommons3)),
+    externalDistribution,
+    nonCommons,
+    licenseOnly,
   };
 };
 
@@ -200,7 +215,8 @@ const updateDbSchema = async () => {
       title TEXT NOT NULL,
       external_distribution BOOLEAN NOT NULL,
       non_commons BOOLEAN NOT NULL,
-      license_only BOOLEAN NOT NULL
+      license_only BOOLEAN NOT NULL,
+      children_count INTEGER NOT NULL
     );
   `);
 
@@ -261,9 +277,9 @@ const updateDbSchema = async () => {
 
 const insertLicenses = async (
   licensesIndex: Map<string, LicenseIndex>,
-  externalDistribution: ExternalDistribution[],
-  nonCommons: NonCommons[],
-  licenseOnly: LicenseOnly[],
+  externalDistribution: Map<string, ExternalDistribution>,
+  nonCommons: Map<string, NonCommons>,
+  licenseOnly: Map<string, LicenseOnly>,
 ) => {
   log.info("Inserting licenses...");
   const bulkInsert = async <T extends Record<string, unknown>>(
@@ -292,15 +308,15 @@ const insertLicenses = async (
   await bulkInsert("licenses_index", Array.from(licensesIndex.values()));
 
   log.info(
-    `Inserting external_distribution (${externalDistribution.length} rows)...`,
+    `Inserting external_distribution (${externalDistribution.size} rows)...`,
   );
-  await bulkInsert("external_distribution", externalDistribution);
+  await bulkInsert("external_distribution", [...externalDistribution.values()]);
 
-  log.info(`Inserting non_commons (${nonCommons.length} rows)...`);
-  await bulkInsert("non_commons", nonCommons);
+  log.info(`Inserting non_commons (${nonCommons.size} rows)...`);
+  await bulkInsert("non_commons", [...nonCommons.values()]);
 
-  log.info(`Inserting license_only (${licenseOnly.length} rows)...`);
-  await bulkInsert("license_only", licenseOnly);
+  log.info(`Inserting license_only (${licenseOnly.size} rows)...`);
+  await bulkInsert("license_only", [...licenseOnly.values()]);
 };
 
 export const updateDb = async () => {
@@ -356,6 +372,14 @@ type Commons2Keys = "作品ID" | "タイトル" | "説明文" | "投稿者名" |
 
 type Commons3Keys = Commons1Keys;
 
+const parseIntStrict = (value: string): number => {
+  const parsed = parseInt(value);
+  if (isNaN(parsed)) {
+    throw new Error(`Failed to parse integer: ${value}`);
+  }
+  return parsed;
+};
+
 const convertCommons1 = (
   row: Record<Commons1Keys, string>,
 ): ExternalDistribution => {
@@ -376,7 +400,7 @@ const convertCommons1 = (
     personalCommercialUse: row["営利利用（個人）"],
     corporateCommercialUse: row["営利利用（法人）"],
     customConditions: row["独自に定める条件"],
-    childrenCount: parseInt(row["子作品数"]),
+    childrenCount: parseIntStrict(row["子作品数"]),
   };
 };
 
@@ -386,7 +410,7 @@ const convertCommons2 = (row: Record<Commons2Keys, string>): NonCommons => {
     title: row["タイトル"],
     description: row["説明文"],
     uploader: row["投稿者名"],
-    childrenCount: parseInt(row["子作品数"]),
+    childrenCount: parseIntStrict(row["子作品数"]),
   };
 };
 
@@ -394,10 +418,10 @@ const convertCommons3 = (row: Record<Commons3Keys, string>): LicenseOnly => {
   return convertCommons1(row);
 };
 
-const toUnique = <T extends { id: string }>(rows: T[]): T[] => {
+const toMap = <T extends { id: string }>(rows: T[]): Map<string, T> => {
   const unique = new Map<string, T>();
   for (const row of rows) {
     unique.set(row.id, row);
   }
-  return Array.from(unique.values());
+  return unique;
 };

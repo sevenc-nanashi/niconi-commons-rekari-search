@@ -18,7 +18,12 @@
   },
   "dependencies": {
     "@luca/cases": "npm:@jsr/luca__cases@^1.0.0",
+    "@vueuse/core": "^10.11.0",
+    "@workspace/common": "workspace:*",
     "consola": "^3.2.3",
+    "element-plus": "^2.7.5",
+    "urlcat": "^3.1.0",
+    "vite-plugin-vue-devtools": "^7.3.2",
     "vue": "^3.4.29"
   }
 }

@@ -1,10 +1,12 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import fonts from "unplugin-fonts/vite";
+import devtools from "vite-plugin-vue-devtools";
 
 export default defineConfig({
   plugins: [
     vue(),
+    devtools(),
     fonts({
       google: {
         families: [
