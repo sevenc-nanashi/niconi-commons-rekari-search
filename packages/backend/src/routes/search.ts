@@ -21,15 +21,9 @@ app.get(
     z.object({
       id: z.string().optional(),
       title: z.string().optional(),
-      externalDistribution: z
-        .enum(["true", "false"])
-        .pipe(z.coerce.boolean())
-        .optional(),
-      nonCommons: z.enum(["true", "false"]).pipe(z.coerce.boolean()).optional(),
-      licenseOnly: z
-        .enum(["true", "false"])
-        .pipe(z.coerce.boolean())
-        .optional(),
+      externalDistribution: z.enum(["true", "false"]).optional(),
+      nonCommons: z.enum(["true", "false"]).optional(),
+      licenseOnly: z.enum(["true", "false"]).optional(),
       offset: z.string().pipe(z.coerce.number().int().min(0)).optional(),
     }),
   ),
@@ -37,36 +31,43 @@ app.get(
     const query = c.req.valid("query");
 
     const conditions = [];
+    const values = [];
 
     if (query.id) {
-      conditions.push(
-        `id LIKE ${db.escapeLiteral(query.id).replace(/'$/, "%'")}`,
-      );
+      conditions.push(`id LIKE $${values.length + 1}`);
+      values.push(query.id + "%");
     }
     if (query.title) {
-      conditions.push(
-        `title LIKE ${db.escapeLiteral(query.title).replace(/^'/, "'%").replace(/'$/, "%'")}`,
-      );
-    }
-    if (!query.externalDistribution) {
-      conditions.push(`external_distribution = false`);
-    }
-    if (!query.nonCommons) {
-      conditions.push(`non_commons = false`);
-    }
-    if (!query.licenseOnly) {
-      conditions.push(`license_only = false`);
+      conditions.push(`title LIKE $${values.length + 1}`);
+      values.push(query.title + "%");
     }
 
-    if (conditions.length === 0) {
-      conditions.push("true");
+    const boolFilter = [];
+
+    if (query.externalDistribution === "true") {
+      boolFilter.push(`external_distribution = true`);
     }
+    if (query.nonCommons === "true") {
+      boolFilter.push(`non_commons = true`);
+    }
+    if (query.licenseOnly === "true") {
+      boolFilter.push(`license_only = true`);
+    }
+
+    if (boolFilter.length === 0) {
+      return c.json({
+        count: 0,
+        results: [],
+      });
+    }
+
+    conditions.push(`(${boolFilter.join(" OR ")})`);
 
     const countSql = `SELECT count(id) FROM licenses_index WHERE ${conditions.join(" AND ")}`;
 
-    log.info(countSql);
+    log.info(countSql, values);
 
-    const countResult = await db.query<{ count: string }>(countSql);
+    const countResult = await db.query<{ count: string }>(countSql, values);
 
     const count = parseInt(countResult.rows[0].count);
 
@@ -79,7 +80,7 @@ app.get(
     log.info(selectSql);
 
     const licenseIndexes = await db
-      .query(selectSql)
+      .query(selectSql, values)
       .then((result) => result.rows.map(toJsRow) as LicenseIndex[]);
 
     const externalDistributonIds = licenseIndexes
