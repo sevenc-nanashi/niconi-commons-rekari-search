@@ -10,8 +10,6 @@ export const db = new pg.Client({
   password: env.dbPassword,
 });
 
-await db.connect();
-
 export const toJsRow = <T extends Record<string, unknown>>(
   row: Record<string, unknown>,
 ): T => {

@@ -5,8 +5,8 @@ await build({
   bundle: true,
   minify: true,
   platform: "node",
-  format: "esm",
-  outfile: `${import.meta.dirname}/../../dist/index.mjs`,
+  format: "cjs",
+  outfile: `${import.meta.dirname}/../../dist/index.cjs`,
 });
 
 console.log("Build complete");

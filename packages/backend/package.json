@@ -1,9 +1,9 @@
 {
   "name": "@workspace/backend",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsx ./build.ts"
+    "build": "tsx ./build.mts"
   },
   "devDependencies": {
     "@types/unzipper": "^0.10.9",

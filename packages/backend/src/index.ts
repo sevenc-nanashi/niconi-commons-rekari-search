@@ -1,4 +1,3 @@
-import { Hono } from "hono";
 import { updateDb } from "./updateDb.js";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -7,6 +6,7 @@ import consola from "consola";
 import { logger } from "hono/logger";
 import { HTTPException } from "hono/http-exception";
 import { app } from "./app.js";
+import { db } from "./db.js";
 import "./routes/search.js";
 
 app.use(logger(consola.withTag("api").info));
@@ -20,16 +20,18 @@ app.onError((error, c) => {
   return c.json({ error: error.message }, 500);
 });
 
-await updateDb();
+app.use(serveStatic({ root: `${__dirname}/frontend` }));
 
-app.use(serveStatic({ root: `${import.meta.dirname}/frontend` }));
-
-serve(
-  {
-    port: env.apiPort,
-    fetch: app.fetch.bind(app),
-  },
-  () => {
-    consola.log(`Listening on port ${env.apiPort}`);
-  },
-);
+(async () => {
+  await db.connect();
+  await updateDb();
+  serve(
+    {
+      port: env.apiPort,
+      fetch: app.fetch.bind(app),
+    },
+    () => {
+      consola.log(`Listening on port ${env.apiPort}`);
+    },
+  );
+})();
