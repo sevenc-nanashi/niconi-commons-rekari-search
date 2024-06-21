@@ -4,7 +4,7 @@
     <p>
       <a href="https://static.commons.nicovideo.jp/"
         >ニコニ・コモンズ（Re：仮）</a
-      >の素材を検索するサイトです。<br />
+      >の素材を検索する<span class="font-bold">非公式の</span>サイトです。<br />
       データは自分のサーバーにキャッシュしているため、ニコニコ側のサーバーに負荷をかけることはありません。<br />
     </p>
     <p class="mt-2 text-sm">
