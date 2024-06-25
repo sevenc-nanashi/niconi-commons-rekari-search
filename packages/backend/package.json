@@ -1,13 +1,16 @@
 {
   "name": "@workspace/backend",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsx ./build.mts"
+    "build": "tsx ./build.ts"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@types/unzipper": "^0.10.9",
-    "esbuild": "^0.21.5",
+    "rollup": "^4.18.0",
     "tsx": "^4.15.7",
     "typescript": "^5.5.2"
   },
@@ -15,6 +18,7 @@
     "@hono/node-server": "^1.11.4",
     "@hono/zod-validator": "^0.2.2",
     "@luca/cases": "npm:@jsr/luca__cases",
+    "@rollup/plugin-json": "^6.1.0",
     "@workspace/common": "workspace:*",
     "consola": "^3.2.3",
     "csv-parse": "^5.5.6",
