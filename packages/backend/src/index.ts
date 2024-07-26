@@ -9,7 +9,7 @@ import { app } from "./app.js";
 import { db } from "./db.js";
 import "./routes/search.js";
 
-process.chdir(__dirname);
+process.chdir(import.meta.dirname);
 
 app.use(logger(consola.withTag("api").info));
 

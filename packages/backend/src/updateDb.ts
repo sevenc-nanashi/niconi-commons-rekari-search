@@ -44,7 +44,7 @@ const download = async (url: string, path: string) => {
 const dataDir =
   process.env.NODE_ENV === "production"
     ? `/data/backend`
-    : `${__dirname}/../../data/backend`;
+    : `${import.meta.dirname}/../../data/backend`;
 
 const downloadLicenses = async () => {
   log.info("Downloading licenses...");

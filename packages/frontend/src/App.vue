@@ -45,7 +45,7 @@
             label="二次創作（子作品）がある ニコニコ動画・ニコニコ静画などの説明文"
           />
           <p class="type-description description wrap">
-            ニコニコ動画やニコニコ静画などに投稿されていた、MME素材や立ち絵素材のダウンロードURL・ダウンロードパスワードなどをご覧いただけます。<br />
+            ニコニコ動画やニコニコ静画などに投稿されていた、MMD素材や立ち絵素材のダウンロードURL・ダウンロードパスワードなどをご覧いただけます。<br />
             二次創作（子作品）があり、説明文にURLが含まれているニコニコ動画・ニコニコ静画などのタイトル・説明文を機械的に抽出したものです。データに含まれるコンテンツすべてが必ずしも投稿者により二次創作の公認をされているわけではないことにご留意ください。説明文をよくご覧になった上でご活用ください。<br />
             データが膨大であるため、子作品数の多い上位30,000件の情報提供とさせていただいています。
           </p>
@@ -56,12 +56,7 @@
             label="ニコニ・コモンズで素材配布しているライセンス"
           />
           <p class="type-description description wrap">
-            ニコニ・コモンズにアップロードいただいていた素材ファイルは復旧作業中です。<br />
-            一度ダウンロードした素材の利用条件の確認用に、説明のみご用意いたしました。<br />
-            データが膨大であるため、子作品数の多い上位30,000件の情報提供とさせていただいています。<br />
-            <span class="text-red-500"
-              >※素材ファイルは含まれておりません。</span
-            >
+            データが膨大であるため、子作品数の多い上位30,000件の情報提供とさせていただいています。
           </p>
         </div>
 
@@ -90,7 +85,16 @@
           >
             <template #header>
               <div class="w-full relative">
-                <p class="font-bold">
+                <a
+                  v-if="licenseInfo.licenseOnly"
+                  class="font-bold text-blue-500 hover:underline"
+                  :href="`https://static.commons.nicovideo.jp/works/${licenseInfo.id}`"
+                  target="_blank"
+                  @click.stop
+                >
+                  {{ licenseInfo.title }}
+                </a>
+                <p v-else class="font-bold">
                   {{ licenseInfo.title }}
                 </p>
                 <p>
