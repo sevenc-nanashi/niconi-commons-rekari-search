@@ -15,7 +15,7 @@
     </p>
 
     <form class="border-slate-300 border-t-[1px] pt-4 mt-2 relative">
-      <fieldset :disabled="isSearching">
+      <fieldset :disabled="isSearching" class="flex flex-col gap-2">
         <div
           class="grid absolute top-0 right-0 w-full h-full bg-white z-50 transition-opacity duration-300 cursor-wait"
           :style="{
@@ -72,48 +72,54 @@
       <template v-else>
         <p v-if="licenseCount === 0">何も見つかりませんでした。</p>
         <p v-if="licenseCount > 0">検索結果：{{ licenseCount }}件</p>
-        <div
-          v-if="licenseCount > 0"
-          class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2"
-        >
-          <ElCard
-            v-for="licenseInfo in licenseInfos"
-            :key="licenseInfo.id"
-            shadow="hover"
-            class="cursor-pointer h-[400px] relative"
-            @click="verboseView(licenseInfo)"
-          >
-            <template #header>
-              <div class="w-full relative">
-                <a
-                  v-if="licenseInfo.licenseOnly"
-                  class="font-bold text-blue-500 hover:underline"
-                  :href="`https://static.commons.nicovideo.jp/works/${licenseInfo.id}`"
-                  target="_blank"
-                  @click.stop
-                >
-                  {{ licenseInfo.title }}
-                </a>
-                <p v-else class="font-bold">
-                  {{ licenseInfo.title }}
-                </p>
-                <p>
-                  {{ getUploader(licenseInfo) }}
-                  <span class="opacity-75 monospace absolute right-0">
-                    {{ licenseInfo.id }}
-                  </span>
-                </p>
-              </div>
-            </template>
+        <div v-if="licenseCount > 0" class="flex flex-col">
+          <div id="items" class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+            <ElCard
+              v-for="licenseInfo in licenseInfos"
+              :key="licenseInfo.id"
+              shadow="hover"
+              class="cursor-pointer h-[400px] relative"
+              @click="verboseView(licenseInfo)"
+            >
+              <template #header>
+                <div class="w-full relative">
+                  <a
+                    v-if="licenseInfo.licenseOnly"
+                    class="font-bold text-blue-500 hover:underline"
+                    :href="`https://static.commons.nicovideo.jp/works/${licenseInfo.id}`"
+                    target="_blank"
+                    @click.stop
+                  >
+                    {{ licenseInfo.title }}
+                  </a>
+                  <p v-else class="font-bold">
+                    {{ licenseInfo.title }}
+                  </p>
+                  <p>
+                    {{ getUploader(licenseInfo) }}
+                    <span class="opacity-75 monospace absolute right-0">
+                      {{ licenseInfo.id }}
+                    </span>
+                  </p>
+                </div>
+              </template>
 
-            <p class="whitespace-pre-wrap text-sm description wrap">
-              {{ getDescription(licenseInfo) }}
-            </p>
+              <p class="whitespace-pre-wrap text-sm description wrap">
+                {{ getDescription(licenseInfo) }}
+              </p>
 
-            <div
-              class="absolute bottom-0 right-0 w-full bg-gradient-to-b from-transparent to-white h-12"
-            />
-          </ElCard>
+              <div
+                class="absolute bottom-0 right-0 w-full bg-gradient-to-b from-transparent to-white h-12"
+              />
+            </ElCard>
+          </div>
+          <div class="flex justify-center mt-4">
+            <InfiniteLoading @infinite="fetchMore" target="items">
+              <template #complete>
+                <p class="text-gray-500">検索結果はこれ以上ありません。</p>
+              </template>
+            </InfiniteLoading>
+          </div>
         </div>
       </template>
     </div>
@@ -130,10 +136,12 @@
 </template>
 
 <script setup lang="ts">
+import InfiniteLoading from "v3-infinite-loading";
+import "v3-infinite-loading/lib/style.css";
 import { ElButton, ElCard, ElCheckbox, ElDialog, ElInput } from "element-plus";
 import VerboseView from "./components/VerboseView.vue";
 import { computed, ref } from "vue";
-import urlcat from "urlcat";
+import { pathcat } from "pathcat";
 import { LicenseInfo, SearchResponse } from "@workspace/common/dist/types";
 import { getDescription, getUploader } from "./utils.ts";
 
@@ -156,7 +164,7 @@ const search = async () => {
     searchResult.value = null;
 
     const response = await fetch(
-      urlcat("/api/search", {
+      pathcat("/api/search", {
         id: idQuery.value,
         title: titleQuery.value,
         externalDistribution: includeExternalDistribution.value,
@@ -178,6 +186,33 @@ const search = async () => {
     licenseInfos.value = result.results;
   } finally {
     isSearching.value = false;
+  }
+};
+
+const fetchMore = async (state) => {
+  const response = await fetch(
+    pathcat("/api/search", {
+      id: idQuery.value,
+      title: titleQuery.value,
+      externalDistribution: includeExternalDistribution.value,
+      nonCommons: includeNonCommons.value,
+      licenseOnly: includeLicenseOnly.value,
+      offset: licenseInfos.value.length,
+    }),
+  );
+
+  if (!response.ok) {
+    searchResult.value = "error";
+    return;
+  }
+
+  const result: SearchResponse = await response.json();
+
+  licenseInfos.value.push(...result.results);
+  if (result.results.length === 0) {
+    state.complete();
+  } else {
+    state.loaded();
   }
 };
 
