@@ -1,17 +1,9 @@
 # niconi-commons-rekari-search / ニコニ・コモンズ（Re：仮）サーチ
 
-[ニコニ・コモンズ（Re：仮）](https://static.commons.nicovideo.jp/)の素材を検索するサイトです。
-データはサーバーにキャッシュしているため、ニコニコ側のサーバーに負荷をかけることはありません。
+ニコニ・コモンズ（Re：仮）の素材を検索するサイトでした。
+ニコニ・コモンズの復旧に伴い、現在はサービスを終了しています。
 
-## コマンド
-
-```bash
-pnpm install
-
-pnpm run dev
-
-pnpm run build
-```
+爆破前のコードは`legacy`ブランチを参照してください。
 
 ## ライセンス
 
